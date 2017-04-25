@@ -1,0 +1,21 @@
+db_name: "i2b2"
+#db_user: "dbuser1"
+db_password: "demouser"
+db_archive: "/tmp/i2b2createdb-1708.zip"
+db_command: "/opt/apache-ant-latest/bin/ant -f data_build.xml"
+crc_data_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Crcdata/"
+hive_data_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Hivedata/"
+im_data_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Imdata/"
+metadata_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Metadata/"
+pmdata_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Pmdata/"
+workdata_dir: "/opt/i2b2/dev-i2b2-data-master/edu.harvard.i2b2.data/Release_1-7/NewInstall/Workdata/"
+
+
+dbs_list:
+- dbuser: i2b2demodata
+- dbuser: i2b2hive
+- dbuser: i2b2imdata
+- dbuser: i2b2metadata
+- dbuser: i2b2pm
+- dbuser: i2b2workdata
+

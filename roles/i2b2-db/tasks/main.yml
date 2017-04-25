@@ -1,0 +1,250 @@
+---
+
+   - name: install psycopg2
+     yum:
+      name: python-psycopg2
+      state: latest
+     tags: createdb
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: createdb
+   
+   - name: Start postgresql
+     systemd: state=started name=postgresql.service
+
+   - name: creating i2b2 db
+     postgresql_db:
+       name: "{{ db_name }}"
+     tags: createdb
+
+   - name: create db users
+     postgresql_user:
+       name: "{{ item.dbuser }}"
+       password: "{{ db_password }}"
+     with_items: "{{ dbs_list }}"
+     tags: createdb
+
+   - name: Copy privilege setting file
+     template:
+       src: my_psql_manual_scripts.sql
+       dest: /tmp
+     tags: createdb
+
+   - name: Set privileges
+     shell: psql -f /tmp/my_psql_manual_scripts.sql
+     become: true
+     become_user: postgres
+     tags: createdb
+
+# have to run these manually since ansible 1.9.1 does not support postgres schema module
+#i2b2=# create schema i2b2demodata authorization i2b2demodata;
+#CREATE SCHEMA
+#i2b2=# create schema i2b2hive authorization i2b2hive;
+#CREATE SCHEMA
+#i2b2=# create schema i2b2imdata authorization i2b2imdata;
+#CREATE SCHEMA
+#i2b2=# create schema i2b2metadata authorization i2b2metadata;
+#CREATE SCHEMA
+#i2b2=# create schema i2b2pm authorization i2b2pm;
+#CREATE SCHEMA
+#i2b2=# create schema i2b2workdata authorization i2b2workdata;
+#CREATE SCHEMA
+
+#i2b2=# grant all privileges on schema i2b2demodata to i2b2demodata;
+#GRANT
+#i2b2=# grant all privileges on schema i2b2hive to i2b2hive;
+#GRANT
+#i2b2=# grant all privileges on schema i2b2imdata to i2b2imdata;
+#GRANT
+#i2b2=# grant all privileges on schema i2b2metadata to i2b2metadata;
+#GRANT
+#i2b2=# grant all privileges on schema i2b2pm to i2b2pm;
+#GRANT
+#i2b2=# grant all privileges on schema i2b2workdata to i2b2workdata;
+#GRANT
+
+#   - name: set the privileges for db
+#     postgresql_privs:
+#       database: i2b2
+#       state: present
+#       privs: ALL
+#       type: database
+#       role: "{{ item.dbuser }}"
+#       obj: "{{ item.dbuser }}"
+#     with_items: "{{ dbs_list }}"   
+
+   - name: set the privileges for schema
+     postgresql_privs:
+       database: i2b2
+       state: present
+       privs: ALL
+       type: schema
+       role: "{{ item.dbuser }}"
+       obj: "{{ item.dbuser }}"
+     with_items: "{{ dbs_list }}"  
+     tags: createdb
+
+   - name: make sure /opt/i2b2 exists
+     file: path=/opt/i2b2 state=directory
+     tags: createdb
+
+   - name: Unzip database scripts
+     unarchive: 
+       src: files/i2b2createdb-1708.zip
+       dest: /opt/i2b2
+#       remote_src: yes
+     tags: createdb
+   
+   - name: Copy db properties
+     template:
+      src: crcdata/db.properties
+      dest: "{{ crc_data_dir }}"
+      owner: root
+      group: root
+      mode: 0644
+     tags: createdb
+
+   - name: Create CRC tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_crcdata_tables_release_1-7
+     args:
+       chdir: "{{ crc_data_dir }}"
+     tags: createdb
+    
+   - name: Create CRC stored procedures
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_procedures_release_1-7 
+     args:
+       chdir: "{{ crc_data_dir }}"
+     tags: createdb
+     
+   - name: Load CRC tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_demodata_load_data
+     args:
+       chdir: "{{ crc_data_dir }}"
+     tags: createdb
+
+   - name: Set hivedata properties
+     template:
+       src: hivedata/db.properties
+       dest: "{{ hive_data_dir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: createdb
+       
+   - name: Create hive tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_hivedata_tables_release_1-7
+     args:
+       chdir: "{{ hive_data_dir }}"
+     tags: createdb
+
+   - name: Load data into hive tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_hivedata_load_data
+     args:
+       chdir: "{{ hive_data_dir }}"
+     tags: createdb
+
+   - name: Set imdata db properties
+     template: 
+      src: imdata/db.properties
+      dest: "{{ im_data_dir }}"
+      owner: root
+      group: root
+      mode: 0644
+     tags: createdb
+
+   - name: Create IM tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_imdata_tables_release_1-7
+     args:
+       chdir: "{{ im_data_dir }}"
+     tags: createdb
+
+   - name: Load IM tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_imdata_load_data
+     args:
+       chdir: "{{ im_data_dir }}"
+     tags: createdb
+
+   - name: Set metadata properties
+     template:
+       src: metadata/db.properties
+       dest: "{{ metadata_dir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: createdb
+    
+   - name: Create metadata tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_metadata_tables_release_1-7
+     args:
+       chdir: "{{ metadata_dir }}"
+     tags: createdb
+
+   - name: Load metadata tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_metadata_load_data
+     args: 
+       chdir: "{{ metadata_dir }}"
+     tags: createdb
+   
+   - name: Set pmdata db properties
+     template:
+       src: pmdata/db.properties
+       dest: "{{ pmdata_dir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: createdb
+    
+   - name: Create pm tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_pmdata_tables_release_1-7
+     args:
+       chdir: "{{ pmdata_dir }}"
+     tags: createdb
+
+   - name: Create pm stored procedures
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_triggers_release_1-7
+     args:
+        chdir: "{{ pmdata_dir }}"
+     tags: createdb
+
+   - name: Load data repository tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_pmdata_load_data
+     args:
+       chdir: "{{ pmdata_dir }}"
+     tags: createdb
+
+   - name: Copy workdata properties
+     template:
+       src: workdata/db.properties
+       dest: "{{ workdata_dir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: createdb
+   
+   - name: Create work tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml create_workdata_tables_release_1-7
+     args:
+       chdir: "{{ workdata_dir }}"
+     tags: createdb
+   
+   - name: Load work tables
+     command: /opt/apache-ant-1.9.6/bin/ant -f data_build.xml db_workdata_load_data
+     args:
+       chdir: "{{ workdata_dir }}"
+     tags: createdb
+
+   - name: Copy final settings
+     template:
+       src: postinstall.sql
+       dest: /tmp
+     tags: createdb
+
+   - name: set final permissions
+     shell: psql -f /tmp/postinstall.sql
+     become: true
+     become_user: postgres
+     tags: createdb
+
+  #roles:
+    #- { role: insert-data, tags: ['psql_insert'] }

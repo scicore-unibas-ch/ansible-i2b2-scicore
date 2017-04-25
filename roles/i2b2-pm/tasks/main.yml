@@ -1,0 +1,35 @@
+ #Configure and deploy pm cell
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: pmdeploy
+
+   - name: Copy config pm common build properties
+     template: 
+       src: pm/build.properties
+       dest: "{{ pm_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: pmdeploy
+
+   - name: Data source configuration setup
+     template:
+       src: pm/pm-ds.xml
+       dest: "{{ pm_srcdir }}/etc/jboss/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: pmdeploy
+
+   - name: Deploy the PM cell
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy
+     args:
+       chdir: "{{ pm_srcdir }}"
+     tags: pmdeploy
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: pmdeploy
+
+   

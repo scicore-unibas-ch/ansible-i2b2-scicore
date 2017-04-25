@@ -1,0 +1,13 @@
+---
+
+- name: i2b2 playbook
+  hosts: "{{ hostsvar }}"
+  remote_user: root
+
+  roles:
+   
+    - { role: i2b2-core, tags: ['i2b2_core'] }
+    - { role: i2b2-db, tags: ['i2b2_db'] }
+    - { role: i2b2-pm, tags: ['i2b2_pm'] }
+    - { role: i2b2-web, tags: ['i2b2_web'] }
+    - { role: i2b2-cells, tags: ['i2b2_cells'] }

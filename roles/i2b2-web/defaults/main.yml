@@ -1,0 +1,14 @@
+# destination dir for admin
+dest_dir: "/var/www/html/admin/"
+
+# source dir for admin
+source_dir: "files/admin/"
+
+# webclient src dir
+webclient_src: "files/webclient/i2b2webclient-1708a/"
+
+# webclient dst dir
+webclient_dst: "/var/www/html/webclient/"
+
+
+

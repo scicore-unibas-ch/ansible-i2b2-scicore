@@ -1,0 +1,55 @@
+---
+  # install i2b2 web admin files
+  
+ - name: make sure /var/www/html/admin exists
+   file: path="/var/www/html/admin" state=directory
+ 
+ - name: check that we have rsync
+   yum:
+     name: rsync
+     state: latest
+
+ - name: Install apache
+   yum:
+     name: httpd
+     state: latest
+
+ - name: Install php
+   yum:
+     name: php
+     state: latest
+ 
+ - name: sync web server files to destination
+   synchronize: 
+     src: "{{ source_dir }}"
+     dest: "{{ dest_dir }}"
+
+ - name: configure web server
+   template: 
+     src: admin/i2b2_config_data.js
+     dest: "{{ dest_dir }}"
+
+ - name: Start httpd service
+   systemd: state=started name=httpd.service enabled=yes
+
+  # install i2b2 webclient files
+  
+ - name: make sure /var/www/html/webclient exists
+   file: path="/var/www/html/webclient" state=directory
+
+
+ - name: sync webclient files to destination
+   synchronize:
+      src: "{{ webclient_src }}"
+      dest: "{{ webclient_dst }}"
+
+ - name: configure webclient
+   template:
+      src: webclient/i2b2_config_data.js
+      dest: "{{ webclient_dst }}"
+
+
+
+
+   
+

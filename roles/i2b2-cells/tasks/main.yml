@@ -1,0 +1,294 @@
+--- 
+
+# configure and build ontology cell
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: onto
+
+   - name: Copy build properties file
+     template:
+       src: onto/build.properties
+       dest: "{{ onto_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: onto
+     
+   - name: Copy application directory properties file
+     template:
+       src: onto/ontology_application_directory.properties
+       dest: "{{ onto_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: onto
+
+   - name: Copy ontology properties file
+     template: 
+       src: onto/ontology.properties
+       dest: "{{ onto_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: onto
+
+   - name: Configure data sources
+     template: 
+       src: onto/ont-ds.xml
+       dest: "{{ onto_srcdir }}/etc/jboss/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: onto
+            
+   - name: Deploy server
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy 
+     args:
+      chdir: "{{ onto_srcdir  }}"
+     tags: onto
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: onto
+
+# set up and deploy crc cell
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: crc
+
+   - name: Copy build properties file
+     template:
+       src: crc/build.properties
+       dest: "{{ crc_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: Copy application directory properties file
+     template:
+       src: crc/crc_application_directory.properties
+       dest: "{{ crc_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: Config crc loader properties file
+     template:
+       src: crc/edu.harvard.i2b2.crc.loader.properties
+       dest: "{{ crc_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: Configure data sources
+     template:
+       src: crc/CRCLoaderApplicationContext.xml
+       dest: "{{ crc_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: Configure the CRC properties
+     template:
+       src: crc/crc.properties
+       dest: "{{ crc_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: More data source configuration
+     template:
+       src: crc/crc-ds.xml
+       dest: "{{ crc_srcdir }}/etc/jboss/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: crc
+
+   - name: Deploy server
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy
+     args:
+      chdir: "{{ crc_srcdir  }}"
+     tags: crc
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: crc
+   
+# configure and build workplace cell
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: work
+
+   - name: configure build properties
+     template:
+       src: work/build.properties
+       dest: "{{ work_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: work
+  
+   - name: configure application directory properties
+     template:
+       src: work/workplace_application_directory.properties
+       dest: "{{ work_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: work
+    
+   - name: workplace properties configuration
+     template:
+       src: work/workplace.properties
+       dest: "{{ work_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: work
+    
+   - name: data source configuration
+     template:
+       src: work/work-ds.xml
+       dest: "{{ work_srcdir }}/etc/jboss"
+       owner: root
+       group: root
+       mode: 0644
+     tags: work
+   
+   - name: deploy the workplace
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy
+     args:
+        chdir: "{{ work_srcdir }}"
+     tags: work
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: work
+
+# fr cell installation
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: fr
+
+   - name: configure build properties
+     template:
+       src: fr/build.properties
+       dest: "{{ fr_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: fr
+
+   - name: configure application directory properties
+     template:
+       src: fr/fr_application_directory.properties
+       dest: "{{ fr_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: fr
+
+   - name: file repository properties configuration
+     template:
+       src: fr/edu.harvard.i2b2.fr.properties
+       dest: "{{ fr_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: fr
+
+   - name: deploy the workplace
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy
+     args:
+        chdir: "{{ fr_srcdir }}"
+     tags: fr
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: fr
+
+# im cell configuration and build
+
+   - name: Stop wildfly service
+     systemd: state=stopped name=wildfly.service
+     tags: im
+
+   - name: configure build properties
+     template:
+       src: im/build.properties
+       dest: "{{ im_srcdir }}"
+       owner: root
+       group: root
+       mode: 0644
+     tags: im
+
+   - name: configure application directory properties
+     template:
+       src: im/im_application_directory.properties
+       dest: "{{ im_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: im
+
+   - name: im management properties configuration
+     template:
+       src: im/im.properties
+       dest: "{{ im_srcdir }}/etc/spring/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: im
+
+   - name: configure the data sources for the im cell
+     template:
+       src: im/im-ds.xml
+       dest: "{{ im_srcdir }}/etc/jboss/"
+       owner: root
+       group: root
+       mode: 0644
+     tags: im
+
+   - name: deploy the workplace
+     command: /opt/apache-ant-1.9.6/bin/ant -f master_build.xml clean build-all deploy
+     args:
+        chdir: "{{ im_srcdir }}"
+     tags: im
+
+   - name: Start wildfly service
+     systemd: state=started name=wildfly.service
+     tags: im
+   
+   - name: stop and disable firewall
+     systemd: state=stopped name=firewalld.service enabled=no
+     tags: postinstall
+
+   - name: install firefox
+     yum:
+       name: firefox
+       state: latest
+     when: special
+     
+   - name: install xauth
+     yum:
+       name: xauth
+       state: latest
+     when: special
+    
+      
+
+
+  
+
+      
+   

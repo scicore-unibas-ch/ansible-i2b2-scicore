@@ -1,0 +1,6 @@
+# i2b2 server-common dir
+server_srcdir: "/opt/i2b2/edu.harvard.i2b2.server-common"
+
+# current java
+current_java_archive: "jdk-8u121-linux-x64.rpm"
+

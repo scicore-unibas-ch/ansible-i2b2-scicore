@@ -1,0 +1,19 @@
+# ontology src dir
+onto_srcdir: "/opt/i2b2/edu.harvard.i2b2.ontology"
+
+# crc src dir
+crc_srcdir: "/opt/i2b2/edu.harvard.i2b2.crc"
+
+# workplace src dir
+work_srcdir: "/opt/i2b2/edu.harvard.i2b2.workplace"
+
+# fr src dir
+fr_srcdir: "/opt/i2b2/edu.harvard.i2b2.fr"
+
+# im src dir
+im_srcdir: "/opt/i2b2/edu.harvard.i2b2.im"
+
+# special variable for post-isntall debug
+special: false
+
+
